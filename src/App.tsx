@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react'
 import { AVISO, CampoNumero, Seg } from './componentes/basicos'
 import { traerMepDelDia } from './datos/cotizaciones'
 import { ProveedorEstado, useEstado } from './estado/almacen'
+import { Acciones } from './pantallas/Acciones'
 import { CarteraRiesgo } from './pantallas/CarteraRiesgo'
+import { Supuestos } from './pantallas/Supuestos'
 import { MEP_REFERENCIA, MEP_REFERENCIA_NOTA } from './riesgo'
 import { entero, horaCorta } from './util/formato'
 import { aplicarTema, leerTema, useRuta, type Ruta, type Tema } from './util/ruta'
 
-const PESTANAS: { ruta: Ruta; texto: string; corto: string }[] = [{ ruta: 'riesgo', texto: 'Cartera y riesgo', corto: 'Cartera' }]
+const PESTANAS: { ruta: Ruta; texto: string; corto: string }[] = [
+  { ruta: 'riesgo', texto: 'Cartera y riesgo', corto: 'Cartera' },
+  { ruta: 'acciones', texto: 'Acciones por escenario', corto: 'Acciones' },
+  { ruta: 'supuestos', texto: 'Supuestos', corto: 'Supuestos' },
+]
 
 export default function App() {
   return (
@@ -48,6 +54,8 @@ function Carcasa() {
       </nav>
 
       {ruta === 'riesgo' && <CarteraRiesgo />}
+      {ruta === 'acciones' && <Acciones edicion={null} />}
+      {ruta === 'supuestos' && <Supuestos />}
 
       <Pie />
     </div>
