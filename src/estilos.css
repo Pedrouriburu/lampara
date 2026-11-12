@@ -236,3 +236,21 @@ footer { font-size: 12.5px; color: var(--muted); }
 /* ===== Agregados de la app (no estaban en el prototipo) ===== */
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; }
+#root { min-width: 0; }
+a { color: var(--accent); }
+button:disabled, input:disabled, textarea:disabled { opacity: .55; cursor: not-allowed; }
+.top-lado { display: grid; gap: 10px; justify-items: start; }
+.solo-angosto { display: none; }
+@media (max-width: 640px) {
+  .solo-ancho { display: none; }
+  .solo-angosto { display: inline; }
+  .tabs a { padding: 8px 11px; font-size: 13.5px; }
+  h1 { font-size: 30px; }
+}
+.mepctl { flex-wrap: wrap; }
+.tag.ejemplo { border-color: var(--loss); color: var(--loss); background: var(--loss-soft); margin-right: 4px; }
+.aviso-ej { font-size: 13.5px; border-left: 3px solid var(--loss); background: var(--loss-soft); border-radius: 0 8px 8px 0; padding: 8px 12px; }
+button.act.primario { background: var(--ink); color: var(--surface); }
+button.act.primario:hover { background: var(--accent); border-color: var(--accent); }
+.fres .big.loss, .selkpi .big.loss, .pano-imp .big.loss { color: var(--loss); }
+.fres .big.gain, .selkpi .big.gain, .pano-imp .big.gain { color: var(--gain); }

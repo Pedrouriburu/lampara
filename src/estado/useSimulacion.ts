@@ -1,5 +1,5 @@
 // Corre la simulación en un Web Worker, con una pequeña espera para no recalcular en cada tecla.
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { simular } from '../riesgo/simular'
 import type { Montos, OpcionesSimulacion, ResultadoSimulacion, Rubro } from '../riesgo/tipos'
 import type { PedidoSimulacion, RespuestaSimulacion } from '../riesgo/worker'
@@ -51,19 +51,19 @@ export interface EstadoSimulacion {
 export function useSimulacion(montos: Montos, rubros: Rubro[], opciones: OpcionesSimulacion): EstadoSimulacion {
   const clave = useMemo(() => JSON.stringify([montos, rubros, opciones]), [montos, rubros, opciones])
   const [estado, setEstado] = useState<EstadoSimulacion>({ resultado: null, calculando: true })
-  const pedido = useRef({ montos, rubros, opciones })
-  pedido.current = { montos, rubros, opciones }
 
   useEffect(() => {
     let vigente = true
-    const total = Object.values(pedido.current.montos).reduce((s, x) => s + Math.max(0, x || 0), 0)
+    const [m, r, o] = JSON.parse(clave) as [Montos, Rubro[], OpcionesSimulacion]
+    const pedido = { montos: m, rubros: r, opciones: o }
+    const total = Object.values(pedido.montos).reduce((s, x) => s + Math.max(0, x || 0), 0)
     if (total <= 0) {
       setEstado({ resultado: null, calculando: false })
       return
     }
     setEstado((e) => ({ ...e, calculando: true }))
     const t = setTimeout(() => {
-      void correr(pedido.current).then((resultado) => {
+      void correr(pedido).then((resultado) => {
         if (vigente) setEstado({ resultado, calculando: false })
       })
     }, 160)
