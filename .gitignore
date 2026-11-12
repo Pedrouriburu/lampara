@@ -1,0 +1,28 @@
+# Dependencias y compilados
+node_modules
+dist
+dist-ssr
+dev-dist
+*.local
+
+# Claves: nunca se suben. Copiá .env.example a .env.local y completalo.
+.env
+.env.*
+!.env.example
+
+# Registros
+logs
+*.log
+npm-debug.log*
+
+# Editores y sistema
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.sw?
+
+# Supabase local
+supabase/.temp
+supabase/.branches
