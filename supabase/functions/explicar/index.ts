@@ -186,7 +186,14 @@ Deno.serve(async (req) => {
   if (cuerpo.tipo === 'analizar' && txt(cuerpo.texto, 4000).length < 15) return fallo(400, 'corto', 'Escribí o pegá al menos una oración.')
 
   // Solo usuarios con sesión: así nadie gasta la clave de Claude desde afuera.
-  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false, autoRefreshToken: false } })
+  // Supabase carga solo estas dos variables en toda Edge Function.
+  const urlBase = Deno.env.get('SUPABASE_URL')
+  const claveServicio = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_SECRET_KEY')
+  if (!urlBase || !claveServicio) {
+    console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en el entorno de la función')
+    return fallo(503, 'sin_base', 'Las explicaciones con Claude todavía no están activadas.')
+  }
+  const admin = createClient(urlBase, claveServicio, { auth: { persistSession: false, autoRefreshToken: false } })
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
   const { data: sesion } = await admin.auth.getUser(token)
   const usuario = sesion?.user

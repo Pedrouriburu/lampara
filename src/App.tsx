@@ -265,6 +265,16 @@ function Pie() {
       El riesgo se calcula en dólares y se muestra en pesos al dólar MEP que elijas (hoy: $ {entero(estado.mep)}; referencia inicial: {MEP_REFERENCIA_NOTA}). Si el dólar sube, el valor en pesos de tus
       activos dolarizados sube aunque en dólares no cambie. Las cifras de escenarios históricos son aproximadas y los datos marcados como ejemplo no son reales. Lámpara es una herramienta educativa: no
       es asesoramiento financiero ni una recomendación de inversión.
+      <br />
+      Fuentes de datos: dólar MEP, CCL y oficial de{' '}
+      <a href="https://dolarapi.com" target="_blank" rel="noopener noreferrer">
+        DolarApi
+      </a>
+      ; riesgo país de{' '}
+      <a href="https://argentinadatos.com" target="_blank" rel="noopener noreferrer">
+        ArgentinaDatos
+      </a>
+      . Las noticias enlazan a su portal de origen.
     </footer>
   )
 }

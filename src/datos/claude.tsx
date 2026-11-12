@@ -96,7 +96,7 @@ export function ProveedorClaude({ children }: { children: ReactNode }) {
   const { modo } = useSesion()
   const [clave, setClave] = useState<EstadoClave>(supabase ? 'averiguando' : 'sin-nube')
 
-  // Una sola consulta al abrir: ¿la función existe y tiene cargada la clave de Claude?
+  // ¿La función existe y tiene cargada la clave de Claude? Se pregunta al abrir y de nuevo al entrar o salir.
   useEffect(() => {
     if (!supabase) return
     let vigente = true
@@ -106,7 +106,7 @@ export function ProveedorClaude({ children }: { children: ReactNode }) {
     return () => {
       vigente = false
     }
-  }, [])
+  }, [modo])
 
   const valor = useMemo<Claude>(() => {
     const disponible = clave === 'con-clave' && modo === 'cuenta'
