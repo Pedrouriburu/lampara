@@ -3,6 +3,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useEstado } from '../estado/almacen'
+import { estadoInicial } from '../estado/tipos'
 import { guardarCorridasLocales, idLocal, leerCorridasLocales, type Corrida } from './corridas'
 import { borrarCorrida, cargarCartera, cargarReferencia, guardarCartera, insertarCorrida, listarCorridas, type Referencia } from './nube'
 import { supabase } from './supabase'
@@ -198,7 +199,10 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
   const salir = useCallback(async () => {
     await supabase?.auth.signOut()
     setUsuario(null)
-  }, [])
+    // Al salir no queda la cartera de la cuenta en este navegador: se vuelve a la de ejemplo.
+    const actual = estadoRef.current
+    reemplazar({ ...estadoInicial(), moneda: actual.moneda, mep: actual.mep, mepOrigen: actual.mepOrigen, mepFecha: actual.mepFecha })
+  }, [reemplazar])
 
   const guardarCorrida = useCallback(
     async (c: Omit<Corrida, 'id'>) => {

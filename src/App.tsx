@@ -13,6 +13,7 @@ import { CarteraRiesgo } from './pantallas/CarteraRiesgo'
 import { EdicionesAnteriores } from './pantallas/EdicionesAnteriores'
 import { Historial } from './pantallas/Historial'
 import { Ingreso } from './pantallas/Ingreso'
+import { Lectura } from './pantallas/Lectura'
 import { PanelNoticias } from './pantallas/PanelNoticias'
 import { Supuestos } from './pantallas/Supuestos'
 import { MEP_REFERENCIA, MEP_REFERENCIA_NOTA, type OpcionesSimulacion, type ResultadoSimulacion } from './riesgo'
@@ -87,7 +88,7 @@ function Carcasa() {
       </nav>
 
       {ruta === 'riesgo' && <CarteraRiesgo noticias={(p) => <PanelNoticias {...p} />} acciones={(r, o) => <BotonGuardarCorrida resultado={r} opciones={o} />} />}
-      {ruta === 'acciones' && <Acciones edicion={seleccionada} />}
+      {ruta === 'acciones' && <Acciones edicion={seleccionada} lectura={(ctx) => <Lectura ctx={ctx} />} />}
       {ruta === 'historial' && <Historial ediciones={<EdicionesAnteriores />} />}
       {ruta === 'supuestos' && <Supuestos />}
 
