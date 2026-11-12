@@ -1,26 +1,49 @@
 import { useEffect, useState } from 'react'
-import { AVISO, CampoNumero, Seg } from './componentes/basicos'
+import { AVISO, CampoNumero, MarcaEjemplo, Seg } from './componentes/basicos'
+import { armarCorrida } from './datos/corridas'
 import { traerMepDelDia } from './datos/cotizaciones'
+import { ultimaCotizacion } from './datos/nube'
+import { ProveedorSesion, useSesion } from './datos/sesion'
+import { hayNube, supabase } from './datos/supabase'
 import { ProveedorEstado, useEstado } from './estado/almacen'
 import { Acciones } from './pantallas/Acciones'
 import { CarteraRiesgo } from './pantallas/CarteraRiesgo'
+import { Historial } from './pantallas/Historial'
+import { Ingreso } from './pantallas/Ingreso'
 import { Supuestos } from './pantallas/Supuestos'
-import { MEP_REFERENCIA, MEP_REFERENCIA_NOTA } from './riesgo'
+import { MEP_REFERENCIA, MEP_REFERENCIA_NOTA, type OpcionesSimulacion, type ResultadoSimulacion } from './riesgo'
 import { entero, horaCorta } from './util/formato'
 import { aplicarTema, leerTema, useRuta, type Ruta, type Tema } from './util/ruta'
 
 const PESTANAS: { ruta: Ruta; texto: string; corto: string }[] = [
   { ruta: 'riesgo', texto: 'Cartera y riesgo', corto: 'Cartera' },
   { ruta: 'acciones', texto: 'Acciones por escenario', corto: 'Acciones' },
+  { ruta: 'historial', texto: 'Historial', corto: 'Historial' },
   { ruta: 'supuestos', texto: 'Supuestos', corto: 'Supuestos' },
 ]
 
 export default function App() {
   return (
     <ProveedorEstado>
-      <Carcasa />
+      <ProveedorSesion>
+        <Entrada />
+      </ProveedorSesion>
     </ProveedorEstado>
   )
+}
+
+function Entrada() {
+  const { listo, modo } = useSesion()
+  if (!listo) {
+    return (
+      <div className="wrap">
+        <p className="small muted" role="status">
+          Abriendo Lámpara…
+        </p>
+      </div>
+    )
+  }
+  return modo === 'ingreso' ? <Ingreso /> : <Carcasa />
 }
 
 function Carcasa() {
@@ -37,6 +60,7 @@ function Carcasa() {
         </div>
         <div className="top-lado">
           <p className="warn">{AVISO}</p>
+          <Cuenta />
           <SelectorTema />
         </div>
       </header>
@@ -53,8 +77,9 @@ function Carcasa() {
         <ControlesMoneda />
       </nav>
 
-      {ruta === 'riesgo' && <CarteraRiesgo />}
+      {ruta === 'riesgo' && <CarteraRiesgo acciones={(r, o) => <BotonGuardarCorrida resultado={r} opciones={o} />} />}
       {ruta === 'acciones' && <Acciones edicion={null} />}
+      {ruta === 'historial' && <Historial />}
       {ruta === 'supuestos' && <Supuestos />}
 
       <Pie />
@@ -69,13 +94,84 @@ function useMepDelDia() {
   useEffect(() => {
     if (manual) return
     let vigente = true
-    void traerMepDelDia().then((c) => {
-      if (c && vigente) cambiar((e) => (e.mepOrigen === 'manual' ? {} : { mep: c.mep, mepOrigen: 'api', mepFecha: c.fecha }), true)
-    })
+    void (async () => {
+      const delDia = await traerMepDelDia()
+      // Respaldo: la última cotización que guardó el agente en la base.
+      const c = delDia ?? (supabase ? await ultimaCotizacion(supabase) : null)
+      if (c && vigente) cambiar((e) => (e.mepOrigen === 'manual' ? {} : { mep: c.mep, mepOrigen: delDia ? 'api' : 'agente', mepFecha: c.fecha }), true)
+    })()
     return () => {
       vigente = false
     }
   }, [manual, cambiar])
+}
+
+function Cuenta() {
+  const { modo, usuario, sync, salir, irAIngreso } = useSesion()
+  if (modo === 'cuenta' && usuario) {
+    const estado = { inactivo: '', cargando: 'Trayendo tu cartera…', guardando: 'Guardando…', guardado: 'Guardado en tu cuenta', error: 'No se pudo guardar; se reintenta con el próximo cambio' }[sync]
+    return (
+      <p className="small cuenta">
+        <span className="num">{usuario.email}</span>
+        {estado && (
+          <span className={sync === 'error' ? 'loss' : 'muted'} role="status">
+            {' · '}
+            {estado}
+          </span>
+        )}
+        {' · '}
+        <button type="button" className="link" onClick={() => void salir()}>
+          Salir
+        </button>
+      </p>
+    )
+  }
+  return (
+    <p className="small cuenta">
+      <MarcaEjemplo>Modo de demostración</MarcaEjemplo> <span className="muted">Tus cambios se guardan solo en este navegador.</span>{' '}
+      <button type="button" className="link" onClick={irAIngreso}>
+        {hayNube ? 'Entrar con mi mail' : 'Volver al inicio'}
+      </button>
+    </p>
+  )
+}
+
+function BotonGuardarCorrida({ resultado, opciones }: { resultado: ResultadoSimulacion | null; opciones: OpcionesSimulacion }) {
+  const { estado } = useEstado()
+  const { guardarCorrida } = useSesion()
+  const [aviso, setAviso] = useState<string | null>(null)
+  useEffect(() => {
+    if (!aviso) return
+    const t = setTimeout(() => setAviso(null), 4000)
+    return () => clearTimeout(t)
+  }, [aviso])
+  return (
+    <>
+      <button
+        type="button"
+        className="act"
+        disabled={!resultado}
+        onClick={async () => {
+          if (!resultado) return
+          const ok = await guardarCorrida(armarCorrida(resultado, opciones, { totalUsd: estado.totalUsd, pct: estado.pct, mep: estado.mep, moneda: estado.moneda }))
+          setAviso(ok ? 'Corrida guardada' : 'No se pudo guardar la corrida')
+        }}
+      >
+        Guardar corrida
+      </button>
+      {aviso && (
+        <span className="small" role="status">
+          {aviso}
+          {aviso === 'Corrida guardada' && (
+            <>
+              {' · '}
+              <a href="#historial">ver historial</a>
+            </>
+          )}
+        </span>
+      )}
+    </>
+  )
 }
 
 function ControlesMoneda() {
@@ -84,7 +180,7 @@ function ControlesMoneda() {
     estado.mepOrigen === 'api'
       ? `del día · dolarapi.com${estado.mepFecha ? ' ' + horaCorta(estado.mepFecha) + ' h' : ''}`
       : estado.mepOrigen === 'agente'
-        ? 'último del agente'
+        ? 'último que guardó el agente'
         : estado.mepOrigen === 'manual'
           ? 'cargado por vos'
           : 'de referencia (4/11/2026)'

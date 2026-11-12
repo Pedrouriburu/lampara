@@ -257,3 +257,16 @@ button.act.primario:hover { background: var(--accent); border-color: var(--accen
 .tabla-sup input[type=number] { max-width: 84px; }
 .tabla-sup td:first-child { white-space: nowrap; }
 .tabla-sup { min-width: 560px; }
+.cuenta { max-width: 46ch; overflow-wrap: anywhere; }
+.ingreso-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+.form { display: grid; gap: 10px; justify-items: start; }
+.form label { font-weight: 600; font-size: 14px; }
+.form input[type=email], .form input:not([type]) { width: 100%; max-width: 340px; font: 400 16px var(--f-body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 11px; }
+.error { color: var(--loss); font-size: 14px; }
+.tabla-hist { min-width: 620px; }
+.tabla-hist tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.tabla-hist .q { all: unset; cursor: pointer; color: var(--muted); padding: 0 6px; }
+.tabla-hist .q:hover { color: var(--loss); }
+.tabla-hist .q:focus-visible { outline: 2px solid var(--accent); }
+.serie svg { display: block; width: 100%; height: 190px; }
+.serie text { font-family: var(--f-data); }

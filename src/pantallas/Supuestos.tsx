@@ -1,9 +1,10 @@
 // Pantalla Supuestos: parámetros de los rubros y sensibilidades de las acciones, editables con aviso.
 import { useState } from 'react'
-import { copiaUniverso, nombreGrupo, UNIVERSO_BASE, type Accion, type Grupo } from '../acciones/universo'
+import { copiaUniverso, nombreGrupo, type Accion, type Grupo } from '../acciones/universo'
 import { CampoNumero, Seg } from '../componentes/basicos'
+import { useSesion } from '../datos/sesion'
 import { useEstado } from '../estado/almacen'
-import { copiaRubros, correlacion, RUBROS_BASE, type Rubro } from '../riesgo'
+import { copiaRubros, correlacion, type Rubro } from '../riesgo'
 
 const acotar = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 /** Tope de una sensibilidad dado el valor de la otra. */
@@ -13,11 +14,15 @@ const r2 = (v: number) => +v.toFixed(2)
 
 export function Supuestos() {
   const { estado, cambiar } = useEstado()
+  const { referencia } = useSesion()
+  // Valores iniciales: los de la base si hay Supabase, y si no los del código.
+  const baseRubros = (): Rubro[] => copiaRubros().map((r) => ({ ...r, ...referencia.rubros?.find((x) => x.id === r.id) }))
+  const baseUniverso = (): Accion[] => copiaUniverso().map((a) => ({ ...a, ...referencia.universo?.find((x) => x.ticker === a.ticker) }))
   const [editar, setEditar] = useState(false)
   const [grupo, setGrupo] = useState<Grupo>('merval')
 
-  const rubrosCambiados = JSON.stringify(estado.rubros) !== JSON.stringify(RUBROS_BASE)
-  const universoCambiado = JSON.stringify(estado.universo) !== JSON.stringify(UNIVERSO_BASE)
+  const rubrosCambiados = JSON.stringify(estado.rubros) !== JSON.stringify(baseRubros())
+  const universoCambiado = JSON.stringify(estado.universo) !== JSON.stringify(baseUniverso())
 
   const fijarRubro = (id: Rubro['id'], campo: 'ret' | 'vol' | 'golpeCrisis' | 'betaAr' | 'betaGlobal', v: number) =>
     cambiar((e) => ({
@@ -59,7 +64,7 @@ export function Supuestos() {
       <section className="panel" aria-labelledby="h-sup-rubros">
         <div className="panel-head">
           <h2 id="h-sup-rubros">Rubros de la cartera</h2>
-          <button type="button" className="link" disabled={!rubrosCambiados} onClick={() => cambiar({ rubros: copiaRubros() })}>
+          <button type="button" className="link" disabled={!rubrosCambiados} onClick={() => cambiar({ rubros: baseRubros() })}>
             Restablecer rubros
           </button>
         </div>
@@ -127,7 +132,7 @@ export function Supuestos() {
                 { valor: 'cedears', texto: 'CEDEARs' },
               ]}
             />
-            <button type="button" className="link" disabled={!universoCambiado} onClick={() => cambiar({ universo: copiaUniverso() })}>
+            <button type="button" className="link" disabled={!universoCambiado} onClick={() => cambiar({ universo: baseUniverso() })}>
               Restablecer acciones
             </button>
           </span>
