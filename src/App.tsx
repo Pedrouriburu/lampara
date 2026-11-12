@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { AVISO, CampoNumero, MarcaEjemplo, Seg } from './componentes/basicos'
+import { ProveedorClaude } from './datos/claude'
 import { armarCorrida } from './datos/corridas'
 import { traerMepDelDia } from './datos/cotizaciones'
 import { ultimaCotizacion } from './datos/nube'
 import { ProveedorSesion, useSesion } from './datos/sesion'
 import { hayNube, supabase } from './datos/supabase'
 import { ProveedorEstado, useEstado } from './estado/almacen'
+import { ProveedorEdiciones, useEdiciones } from './noticias/ediciones'
 import { Acciones } from './pantallas/Acciones'
 import { CarteraRiesgo } from './pantallas/CarteraRiesgo'
+import { EdicionesAnteriores } from './pantallas/EdicionesAnteriores'
 import { Historial } from './pantallas/Historial'
 import { Ingreso } from './pantallas/Ingreso'
+import { PanelNoticias } from './pantallas/PanelNoticias'
 import { Supuestos } from './pantallas/Supuestos'
 import { MEP_REFERENCIA, MEP_REFERENCIA_NOTA, type OpcionesSimulacion, type ResultadoSimulacion } from './riesgo'
 import { entero, horaCorta } from './util/formato'
@@ -26,7 +30,11 @@ export default function App() {
   return (
     <ProveedorEstado>
       <ProveedorSesion>
-        <Entrada />
+        <ProveedorEdiciones>
+          <ProveedorClaude>
+            <Entrada />
+          </ProveedorClaude>
+        </ProveedorEdiciones>
       </ProveedorSesion>
     </ProveedorEstado>
   )
@@ -48,6 +56,7 @@ function Entrada() {
 
 function Carcasa() {
   const ruta = useRuta()
+  const { seleccionada } = useEdiciones()
   useMepDelDia()
 
   return (
@@ -77,9 +86,9 @@ function Carcasa() {
         <ControlesMoneda />
       </nav>
 
-      {ruta === 'riesgo' && <CarteraRiesgo acciones={(r, o) => <BotonGuardarCorrida resultado={r} opciones={o} />} />}
-      {ruta === 'acciones' && <Acciones edicion={null} />}
-      {ruta === 'historial' && <Historial />}
+      {ruta === 'riesgo' && <CarteraRiesgo noticias={(p) => <PanelNoticias {...p} />} acciones={(r, o) => <BotonGuardarCorrida resultado={r} opciones={o} />} />}
+      {ruta === 'acciones' && <Acciones edicion={seleccionada} />}
+      {ruta === 'historial' && <Historial ediciones={<EdicionesAnteriores />} />}
       {ruta === 'supuestos' && <Supuestos />}
 
       <Pie />

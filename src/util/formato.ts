@@ -47,7 +47,7 @@ const ZONA = 'America/Argentina/Buenos_Aires'
 
 export function fechaLarga(f: string): string {
   try {
-    return new Date(f + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: ZONA })
+    return new Date(f + 'T12:00:00-03:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: ZONA })
   } catch {
     return f
   }

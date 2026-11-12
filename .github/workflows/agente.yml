@@ -1,0 +1,65 @@
+name: Agente de noticias
+
+# Corre solo todos los días a las 8:00 de Buenos Aires (11:00 UTC), incluidos fines
+# de semana y feriados. GitHub puede demorarlo unos minutos. También se puede correr
+# a mano: pestaña Actions > Agente de noticias > Run workflow.
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: agente-de-noticias
+  cancel-in-progress: false
+
+jobs:
+  edicion:
+    name: Edición del día
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci --omit=dev
+      - name: Prueba en seco (valida el esquema con la edición de ejemplo)
+        run: node agente/correr.mjs --seco
+      - name: Leer las noticias y publicar la edición
+        run: node agente/correr.mjs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+  # GitHub pausa los cron de un repositorio que pasa 60 días sin cambios.
+  # Un commit vacío por mes en la rama "latido" lo mantiene activo sin tocar "main".
+  latido:
+    name: Latido mensual
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Commit vacío en la rama latido (día 1 de cada mes, o al correrlo a mano)
+        run: |
+          dia="$(TZ=America/Argentina/Buenos_Aires date +%d)"
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$dia" != "01" ]; then
+            echo "Hoy no toca latido (día $dia)."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch origin latido 2>/dev/null; then
+            git checkout -B latido FETCH_HEAD
+          else
+            git checkout --orphan latido
+            git rm -rf --quiet .
+          fi
+          git commit --allow-empty -m "Latido mensual: mantiene activo el agente diario"
+          git push origin latido

@@ -270,3 +270,13 @@ button.act.primario:hover { background: var(--accent); border-color: var(--accen
 .tabla-hist .q:focus-visible { outline: 2px solid var(--accent); }
 .serie svg { display: block; width: 100%; height: 190px; }
 .serie text { font-family: var(--f-data); }
+.fuentes summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.fuentes ul { margin: 8px 0 0; padding-left: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2px 20px; font-size: 14px; }
+.eds { display: grid; }
+.ed { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 210px); gap: 8px 24px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.ed:last-child { border-bottom: 0; }
+.ed h3 { font-size: 16px; }
+.ed p { max-width: 75ch; }
+.ed-lado { display: grid; gap: 2px; align-content: start; justify-items: end; text-align: right; }
+.ed-imp { font-size: 20px; }
+@media (max-width: 640px) { .ed { grid-template-columns: minmax(0, 1fr); } .ed-lado { justify-items: start; text-align: left; } }
