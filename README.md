@@ -1,4 +1,4 @@
-# Lámpara
+# lámpara
 
 Simulador de riesgo para una cartera argentina en pesos y dólares, con un agente que lee las noticias todos los días y una vista de acciones por escenario.
 
