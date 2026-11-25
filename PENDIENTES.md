@@ -58,13 +58,15 @@ Dos límites del plan gratuito que conviene saber:
 
 ## 4. Pegar las claves en GitHub (5 minutos)
 
-En el repositorio de GitHub: **Settings** → **Secrets and variables** → **Actions** → **New repository secret**. Creá estos cuatro, uno por vez (el nombre tiene que ser exacto):
+En el repositorio de GitHub: **Settings** → **Secrets and variables** → **Actions** → **New repository secret**. Creá estos, uno por vez (el nombre tiene que ser exacto):
 
-| Nombre del secreto | Qué pegar |
-| --- | --- |
-| `SUPABASE_URL` | La **Project URL** de Supabase |
-| `SUPABASE_ANON_KEY` | La clave **anon** / **publishable** |
-| `SUPABASE_SERVICE_ROLE_KEY` | La clave **service_role** / **secret** |
+| Nombre del secreto | Qué pegar | ¿Hace falta? |
+| --- | --- | --- |
+| `SUPABASE_URL` | La **Project URL** de Supabase | Sí: sin esto la app publicada no se conecta a la base y no hay ingreso ni guardado |
+| `SUPABASE_ANON_KEY` | La clave **anon** / **publishable** | Sí, por lo mismo |
+| `SUPABASE_SERVICE_ROLE_KEY` | La clave **service_role** / **secret** | Solo si alguna vez corrés el workflow **Agente de noticias** a mano |
+
+La `service_role` da acceso completo a la base: va en los secretos de GitHub y en ningún otro lado.
 
 Después andá a **Actions** → **Publicar la app** → **Run workflow** para que la app se vuelva a publicar ya conectada a tu base. Al abrirla vas a ver la pantalla de ingreso con el campo de mail activo.
 
