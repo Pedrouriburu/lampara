@@ -39,7 +39,7 @@ Lámpara está construida completa, con las ocho fases de la especificación y u
 
 **Lo que trabaja solo**
 
-- Agente diario (`agente/`): trae MEP, CCL, oficial y riesgo país; le pide a Claude (`claude-sonnet-5-5`, con búsqueda web limitada a los 26 portales) las noticias y los escenarios; valida todo con un esquema; reintenta una vez; publica la edición y borra las de más de 60 días.
+- Agente diario (`agente/`): trae MEP, CCL, oficial y riesgo país; le pide a Claude (`claude-sonnet-5-5`, con búsqueda web limitada a los 26 portales) las noticias y los escenarios; valida todo con un esquema; reintenta una vez; publica la edición y borra las de más de 60 días. Hoy esta edición la genera la tarea programada de Claude; el workflow del repositorio quedó en modo manual porque necesita una clave de Anthropic (Groq no tiene búsqueda web).
 - Workflow programado todos los días a las 8:00 de Buenos Aires, con corrida manual y latido mensual.
 - Función `explicar` de Supabase para "Explicar para mi cartera", "Analizar otra noticia" y "Pedir lectura a Claude".
 - Publicación automática en GitHub Pages con cada cambio.
@@ -83,7 +83,7 @@ Los pasos completos, con cada clic, están en `PENDIENTES.md`. En resumen:
 | URL del proyecto de Supabase | Supabase → Project Settings → API | GitHub → Settings → Secrets and variables → Actions → secreto `SUPABASE_URL` |
 | Clave anon (o publishable) | mismo lugar | secreto `SUPABASE_ANON_KEY` |
 | Clave service_role (o secret) | mismo lugar | secreto `SUPABASE_SERVICE_ROLE_KEY` |
-| Clave de la API de Claude | Claude Console → API Keys | secreto `ANTHROPIC_API_KEY` en GitHub, y otra vez en Supabase → Edge Functions → Secrets |
+| Clave de la API de Groq | Groq Console → API Keys | secreto `GROQ_API_KEY` en Supabase → Edge Functions → Secrets |
 
 Antes de eso hay que crear el repositorio en GitHub y subir el proyecto (paso 1), y correr el archivo SQL en Supabase (paso 3). Ninguna clave va en un archivo del proyecto.
 
@@ -103,8 +103,8 @@ Si la corrida termina en amarillo con el aviso "Agente de noticias sin claves", 
 
 Todo entra en planes gratuitos, salvo la API de Claude, que se paga por uso.
 
-- **Dónde se ve el consumo:** Claude Console (<https://console.anthropic.com>) → **Usage** (tokens por día y por modelo) y **Cost** (dólares). El agente también deja escrito su consumo al final de cada corrida en GitHub: tokens de entrada, de salida y cantidad de búsquedas.
-- **Cuánto esperar:** no lo pude medir sin una corrida real. Con los precios vigentes de `claude-sonnet-5-5` (2 dólares por millón de tokens de entrada, 10 por millón de salida) y de la búsqueda web (10 dólares cada 1.000 búsquedas, con un tope de 20 por corrida), mi estimación es de 10 a 25 dólares por mes para el agente diario. Tomalo como orden de magnitud: mirá el número real después de las primeras corridas.
+- **Dónde se ve el consumo:** Groq Console (<https://console.groq.com>) → **Usage**, y los límites de tu cuenta en **Limits**.
+- **Cuánto cuesta:** nada. Las explicaciones de la app corren en el plan gratuito de Groq (30 pedidos por minuto, 1.000 por día, 8.000 tokens por minuto con `openai/gpt-oss-120b`) y la edición diaria la genera la tarea programada de Claude, que entra en la suscripción. Si alguna vez pasás el límite por minuto, la app lo dice y basta con esperar un minuto.
 - **Poné un tope:** en la Console, **Settings** → **Limits**, fijá un gasto mensual máximo. Las explicaciones a pedido tienen además un tope de 40 por usuario y por día.
 
 ## Historial de commits

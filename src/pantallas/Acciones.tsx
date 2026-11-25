@@ -22,7 +22,7 @@ export interface ContextoLectura {
 interface Props {
   /** Edición elegida en el panel de noticias; si no trae escenarios se usan los de respaldo. */
   edicion: Edicion | null
-  /** Botón "Pedir lectura a Claude"; no se muestra si no hay clave. */
+  /** Botón "Pedir lectura"; no se muestra si no hay clave. */
   lectura?: (ctx: ContextoLectura) => ReactNode
 }
 

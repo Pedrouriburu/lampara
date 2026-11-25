@@ -65,24 +65,25 @@ En el repositorio de GitHub: **Settings** → **Secrets and variables** → **Ac
 | `SUPABASE_URL` | La **Project URL** de Supabase |
 | `SUPABASE_ANON_KEY` | La clave **anon** / **publishable** |
 | `SUPABASE_SERVICE_ROLE_KEY` | La clave **service_role** / **secret** |
-| `ANTHROPIC_API_KEY` | La clave de Claude (paso 5) |
 
 Después andá a **Actions** → **Publicar la app** → **Run workflow** para que la app se vuelva a publicar ya conectada a tu base. Al abrirla vas a ver la pantalla de ingreso con el campo de mail activo.
 
-## 5. Activar Claude (10 minutos)
+## 5. Activar las explicaciones con Groq (5 minutos)
 
-La clave de Claude se usa en dos lugares y en ninguno llega al navegador.
+Las explicaciones que se piden desde la app ("Explicar para mi cartera", "Pedir lectura", "Analizar otra noticia") usan **Groq**, que tiene un plan gratuito sin tarjeta: 30 pedidos por minuto, 1.000 por día y 8.000 tokens por minuto con el modelo `openai/gpt-oss-120b`. Alcanza de sobra. Groq no entrena con lo que le mandás.
 
-1. Entrá a la Claude Console (<https://console.anthropic.com>), cargá crédito en **Billing** y creá una clave en **API Keys** → **Create Key**. Copiala: se muestra una sola vez.
-2. **Para el agente diario:** pegala en GitHub como el secreto `ANTHROPIC_API_KEY` (paso 4).
-3. **Para los botones "Explicar para mi cartera":**
-   1. En Supabase, abrí **Edge Functions** → **Deploy a new function** → **Via Editor**.
-   2. Nombre de la función: `explicar` (exacto, en minúsculas).
-   3. Borrá el código de ejemplo. Abrí en tu computadora `supabase\functions\explicar\index.ts`, copiá todo, pegalo y apretá **Deploy function**.
-   4. En **Edge Functions** → **Secrets**, agregá un secreto llamado `ANTHROPIC_API_KEY` con la misma clave.
-   5. (Opcional.) Agregá el secreto `CORREOS_PERMITIDOS` con tu mail para que nadie más pueda gastar tu crédito con las explicaciones. Sin eso, cada usuario tiene un tope de 40 consultas por día.
-4. **Probar el agente:** en GitHub, **Actions** → **Agente de noticias** → **Run workflow**. Tarda unos minutos. Si termina en verde, abrí la app: el panel de noticias tiene que decir "Edición del (día de hoy) · leída por el agente".
-5. **Poné un tope de gasto.** En la Claude Console, en **Settings** → **Limits**, fijá un límite mensual que te quede cómodo. El consumo se ve en **Usage** y **Cost**.
+1. Entrá a <https://console.groq.com>, creá la cuenta y andá a **API Keys** → **Create API Key**. Copiala: se muestra una sola vez.
+2. En Supabase, abrí **Edge Functions** → **Deploy a new function** → **Via Editor**.
+3. Nombre de la función: `explicar` (exacto, en minúsculas).
+4. Borrá el código de ejemplo. Abrí en tu computadora `supabase\functions\explicar\index.ts`, copiá todo, pegalo y apretá **Deploy function**.
+5. En **Edge Functions** → **Secrets**, agregá un secreto llamado `GROQ_API_KEY` con la clave del paso 1.
+6. (Opcional.) Agregá el secreto `CORREOS_PERMITIDOS` con tu mail para que nadie más use tu cuota. Sin eso, cada usuario tiene un tope de 40 consultas por día.
+7. (Opcional.) El secreto `GROQ_MODEL` cambia el modelo; sin él se usa `openai/gpt-oss-120b`.
+8. **Probar:** entrá a la app con tu mail, abrí una noticia y tocá **Explicar para mi cartera**. Si aparece el texto, está andando.
+
+### La edición diaria de noticias
+
+La genera la **tarea programada de Claude**, no GitHub Actions. El agente del repositorio necesita búsqueda web para leer los 26 portales, y Groq no la tiene, así que su horario quedó apagado: el workflow **Agente de noticias** solo corre a mano. Si alguna vez querés volver a usarlo, cargá el secreto `ANTHROPIC_API_KEY` y descomentá las dos líneas de `schedule` en `.github/workflows/agente.yml`.
 
 ---
 

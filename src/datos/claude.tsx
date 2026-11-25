@@ -1,4 +1,4 @@
-// Explicaciones con Claude. La app nunca ve la clave: llama a la Edge Function `explicar` de Supabase.
+// Explicaciones automáticas (Groq). La app nunca ve la clave: llama a la Edge Function `explicar` de Supabase.
 // Si la función no está desplegada, no tiene clave o no hay sesión, `disponible` es falso y los botones se ocultan.
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Noticia } from '../noticias/tipos'
@@ -40,7 +40,7 @@ const GENERICO = 'No se pudo completar el análisis. Probá de nuevo.'
 
 /** Llama a la función y traduce cualquier falla a un mensaje para el usuario. */
 async function invocar(cuerpo: Record<string, unknown>, signal?: AbortSignal): Promise<Record<string, unknown>> {
-  if (!supabase) throw new Error('Claude no está disponible.')
+  if (!supabase) throw new Error('Las explicaciones no están disponibles.')
   const { data, error } = await supabase.functions.invoke('explicar', { body: cuerpo, signal })
   if (error) {
     let mensaje = GENERICO
@@ -86,7 +86,7 @@ function aNoticia(r: Record<string, unknown>): Noticia {
   }
 }
 
-const noDisponible = () => Promise.reject(new Error('Claude no está disponible.'))
+const noDisponible = () => Promise.reject(new Error('Las explicaciones no están disponibles.'))
 
 const CtxClaude = createContext<Claude>({ disponible: false, motivo: null, explicar: noDisponible, analizar: noDisponible, lectura: noDisponible })
 
@@ -96,7 +96,7 @@ export function ProveedorClaude({ children }: { children: ReactNode }) {
   const { modo } = useSesion()
   const [clave, setClave] = useState<EstadoClave>(supabase ? 'averiguando' : 'sin-nube')
 
-  // ¿La función existe y tiene cargada la clave de Claude? Se pregunta al abrir y de nuevo al entrar o salir.
+  // ¿La función existe y tiene cargada la clave del modelo? Se pregunta al abrir y de nuevo al entrar o salir.
   useEffect(() => {
     if (!supabase) return
     let vigente = true
@@ -112,9 +112,9 @@ export function ProveedorClaude({ children }: { children: ReactNode }) {
     const disponible = clave === 'con-clave' && modo === 'cuenta'
     const motivo =
       clave === 'con-clave' && modo !== 'cuenta'
-        ? 'Entrá con tu mail para pedirle a Claude que explique las noticias para tu cartera.'
+        ? 'Entrá con tu mail para pedir una explicación de las noticias para tu cartera.'
         : clave === 'sin-clave' || clave === 'sin-nube'
-          ? 'Las explicaciones con Claude se activan al cargar su clave (los pasos están en PENDIENTES.md). El resto funciona igual.'
+          ? 'Las explicaciones automáticas se activan al cargar la clave del modelo (los pasos están en PENDIENTES.md). El resto funciona igual.'
           : null
     if (!disponible) return { disponible, motivo, explicar: noDisponible, analizar: noDisponible, lectura: noDisponible }
     return {

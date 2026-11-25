@@ -10,7 +10,7 @@ import { numero } from '../riesgo'
 import { enDolares, fechaLarga, horaCorta, pct, pctS } from '../util/formato'
 import type { PropsNoticias } from './CarteraRiesgo'
 
-/** Composición de la cartera en texto, para mandarle a Claude. */
+/** Composición de la cartera en texto, para mandarle al modelo. */
 // oxlint-disable-next-line react/only-export-components
 export function useComposicionTexto(): string {
   const { estado, montos } = useEstado()
@@ -243,7 +243,7 @@ function AnalizarOtra({ llevarAFactores }: { llevarAFactores: PropsNoticias['lle
   return (
     <div className="pegar">
       <h3>Analizar otra noticia</h3>
-      <p className="small muted">Pegá un titular o un párrafo. Claude lo traduce a los dos factores del modelo y calcula el efecto sobre tu cartera.</p>
+      <p className="small muted">Pegá un titular o un párrafo. El analista lo traduce a los dos factores del modelo y calcula el efecto sobre tu cartera.</p>
       <label htmlFor="pegarTxt" className="sr">
         Texto de la noticia
       </label>

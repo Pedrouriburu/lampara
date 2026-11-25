@@ -1,4 +1,4 @@
-// Lectura de Claude sobre la selección de acciones del usuario.
+// Lectura del analista sobre la selección de acciones del usuario.
 import { useRef, useState } from 'react'
 import { nombreGrupo } from '../acciones/universo'
 import { useClaude } from '../datos/claude'
@@ -46,7 +46,7 @@ export function Lectura({ ctx }: { ctx: ContextoLectura }) {
     <>
       <div className="pegar-act">
         <button type="button" className="act" onClick={() => void pedir()} disabled={ocupado}>
-          Pedir lectura a Claude
+          Pedir lectura
         </button>
         {ocupado && (
           <button type="button" className="link" onClick={() => ctl.current?.abort()}>
