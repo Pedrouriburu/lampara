@@ -64,7 +64,7 @@ En el repositorio de GitHub: **Settings** → **Secrets and variables** → **Ac
 | --- | --- | --- |
 | `SUPABASE_URL` | La **Project URL** de Supabase | Sí: sin esto la app publicada no se conecta a la base y no hay ingreso ni guardado |
 | `SUPABASE_ANON_KEY` | La clave **anon** / **publishable** | Sí, por lo mismo |
-| `SUPABASE_SERVICE_ROLE_KEY` | La clave **service_role** / **secret** | Solo si alguna vez corrés el workflow **Agente de noticias** a mano |
+| `SUPABASE_SERVICE_ROLE_KEY` | La clave **secret** (`sb_secret_...`) | Sí: es la que usa el workflow **Publicar edición** para guardar la edición diaria |
 
 La `service_role` da acceso completo a la base: va en los secretos de GitHub y en ningún otro lado.
 
@@ -85,7 +85,15 @@ Las explicaciones que se piden desde la app ("Explicar para mi cartera", "Pedir 
 
 ### La edición diaria de noticias
 
-La genera la **tarea programada de Claude**, no GitHub Actions. El agente del repositorio necesita búsqueda web para leer los 26 portales, y Groq no la tiene, así que su horario quedó apagado: el workflow **Agente de noticias** solo corre a mano. Si alguna vez querés volver a usarlo, cargá el secreto `ANTHROPIC_API_KEY` y descomentá las dos líneas de `schedule` en `.github/workflows/agente.yml`.
+La genera la **tarea programada de Claude** todos los días a las 8:33, y la publica a través de un puente:
+
+1. La tarea investiga las noticias con búsqueda web (gratis, entra en tu suscripción) y arma la edición.
+2. Dispara el workflow **Publicar edición** de este repositorio pasándole el JSON.
+3. El workflow valida la edición con el mismo esquema del agente y la guarda en Supabase con `SUPABASE_SERVICE_ROLE_KEY`.
+
+Así la clave de servicio vive en los secretos de GitHub y nunca en el texto de la tarea. Si una edición sale mal armada, el workflow la rechaza sin guardar nada y el log dice qué campo falla.
+
+El agente propio del repositorio (`agente/correr.mjs`, workflow **Agente de noticias**) quedó sin horario: necesita búsqueda web de Anthropic, que Groq no tiene. Sigue disponible para correr a mano si alguna vez cargás `ANTHROPIC_API_KEY`.
 
 ---
 

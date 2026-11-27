@@ -84,6 +84,7 @@ Los pasos completos, con cada clic, están en `PENDIENTES.md`. En resumen:
 | Clave anon (o publishable) | mismo lugar | secreto `SUPABASE_ANON_KEY` |
 | Clave service_role (o secret) | mismo lugar | secreto `SUPABASE_SERVICE_ROLE_KEY` |
 | Clave de la API de Groq | Groq Console → API Keys | secreto `GROQ_API_KEY` en Supabase → Edge Functions → Secrets |
+| Clave de servicio de Supabase | Supabase → Settings → API Keys → secret | secreto `SUPABASE_SERVICE_ROLE_KEY` en GitHub, para el workflow **Publicar edición** |
 
 Antes de eso hay que crear el repositorio en GitHub y subir el proyecto (paso 1), y correr el archivo SQL en Supabase (paso 3). Ninguna clave va en un archivo del proyecto.
 
