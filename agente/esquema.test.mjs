@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { armarInstruccion, fechaBuenosAires, isoBuenosAires, restarDias } from './correr.mjs'
-import { extraerJson, validarEdicion } from './esquema.mjs'
+import { extraerJson, validarEdicion, validarEdicionAbierta } from './esquema.mjs'
+import { completarFuentes } from './publicar.mjs'
 import { DOMINIOS, portalDe, PORTALES } from './portales.mjs'
 
 const ejemplo = () => JSON.parse(readFileSync(new URL('./edicion-ejemplo.json', import.meta.url), 'utf8'))
@@ -189,5 +190,59 @@ describe('conversación con Claude (cliente simulado)', () => {
     const { generarEdicion } = await import('./correr.mjs')
     const cliente = clienteFalso([{ stop_reason: 'refusal', stop_details: { category: 'cyber' }, content: [], usage: {} }])
     await expect(generarEdicion(cliente, 'instrucción', datos)).rejects.toThrow(/rechazó/)
+  })
+})
+
+describe('esquema abierto (ediciones armadas fuera de este repositorio)', () => {
+  /** La edición de ejemplo, pero citando medios que no están en la lista de portales. */
+  const deOtrosMedios = () => {
+    const e = ejemplo()
+    const medios = ['https://www.investing.com/n/1', 'https://finance.yahoo.com/n/2', 'https://tradingeconomics.com/n/3', 'https://forbesargentina.com/n/4']
+    e.items.forEach((n, i) => (n.url = medios[i % medios.length]))
+    e.fuentes = []
+    return e
+  }
+
+  it('acepta medios fuera de la lista de portales, que el esquema estricto rechaza', () => {
+    const e = deOtrosMedios()
+    expect(validarEdicion(e).ok).toBe(false)
+    const v = validarEdicionAbierta(completarFuentes(e))
+    expect(v.ok ? [] : v.errores).toEqual([])
+  })
+
+  it('sigue exigiendo https', () => {
+    const e = deOtrosMedios()
+    e.items[0].url = 'http://investing.com/n/1'
+    const v = validarEdicionAbierta(completarFuentes(e))
+    expect(v.ok).toBe(false)
+    expect(v.errores.join(' ')).toMatch(/items\.0\.url/)
+  })
+
+  it('rechaza una edición armada con un solo medio', () => {
+    const e = ejemplo()
+    e.items.forEach((n, i) => (n.url = `https://www.ambito.com/n/${i}`))
+    e.fuentes = []
+    const v = validarEdicionAbierta(completarFuentes(e))
+    expect(v.ok).toBe(false)
+    expect(v.errores.join(' ')).toMatch(/1 medio\(s\) distinto/)
+  })
+
+  it('rechaza una edición sin prensa argentina propia', () => {
+    const e = deOtrosMedios()
+    e.items.forEach((n) => (n.ambito = 'Mundo'))
+    const v = validarEdicionAbierta(completarFuentes(e))
+    expect(v.ok).toBe(false)
+    expect(v.errores.join(' ')).toMatch(/medios distintos en las noticias de Argentina/)
+  })
+
+  it('completarFuentes deduce las fuentes de las noticias y respeta las que ya vienen', () => {
+    const e = deOtrosMedios()
+    e.items[1].url = e.items[0].url // repetida: cuenta una sola vez
+    const deducidas = completarFuentes(e).fuentes
+    expect(deducidas.length).toBe(new Set(e.items.map((n) => n.url)).size)
+    expect(deducidas.every((f) => f.portal && f.url.startsWith('https://'))).toBe(true)
+
+    const yaTraia = completarFuentes({ ...e, fuentes: [{ portal: 'Ámbito', url: 'https://www.ambito.com/x' }] })
+    expect(yaTraia.fuentes.length).toBe(1)
   })
 })
