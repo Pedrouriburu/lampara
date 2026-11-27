@@ -18,6 +18,8 @@ export interface Accion {
   tasas: number
   oil: number
   dolar: number
+  /** Verdadero cuando las sensibilidades son el perfil genérico del grupo, no las de esta empresa. */
+  estimada?: boolean
 }
 
 const CSV = `GGAL,Grupo Financiero Galicia,merval,Bancos,11,0.5,0,0,-7
@@ -40,6 +42,7 @@ QQQ,Nasdaq 100 (ETF),cedears,Índice tecnológico,0,1.2,-7,0,0
 AAPL,Apple,cedears,Tecnología,0,1.1,-5,0,0
 MSFT,Microsoft,cedears,Tecnología,0,1.05,-5,0,0
 NVDA,Nvidia,cedears,Semiconductores,0,1.6,-9,0,0
+ASML,ASML Holding,cedears,Equipos para semiconductores,0,1.35,-8,0,0
 GOOGL,Alphabet,cedears,Tecnología,0,1.1,-5,0,0
 AMZN,Amazon,cedears,Consumo y nube,0,1.2,-6,0,0
 MELI,MercadoLibre,cedears,Comercio electrónico (región),2,1.3,-7,0,-1
@@ -59,3 +62,30 @@ export const UNIVERSO_BASE: readonly Accion[] = CSV.split('\n').map((linea) => {
 
 export const copiaUniverso = (): Accion[] => UNIVERSO_BASE.map((a) => ({ ...a }))
 export const nombreGrupo = (g: Grupo) => (g === 'merval' ? 'Merval' : 'CEDEARs')
+
+/**
+ * Perfil genérico de cada grupo: la mediana de las sensibilidades del universo.
+ * Es el que se le da a una acción que el usuario tiene pero que todavía no está
+ * calibrada. Sirve para ubicarla en los escenarios, no para afinarla.
+ */
+export const PERFIL_GENERICO: Record<Grupo, Pick<Accion, 'rp' | 'beta' | 'tasas' | 'oil' | 'dolar'>> = {
+  merval: { rp: 8, beta: 0.5, tasas: -1, oil: 0, dolar: -5 },
+  cedears: { rp: 0, beta: 1, tasas: -4, oil: 0, dolar: 0 },
+}
+
+/** El grupo que le corresponde a una clase de activo de Inviu ("Acciones", "Cedear"...). */
+export const grupoDeClase = (clase: string): Grupo => (/cedear/i.test(clase) ? 'cedears' : 'merval')
+
+/**
+ * Acción provisional para un ticker que el usuario tiene y el universo no conoce.
+ * Queda marcada como estimada para que la app lo diga en pantalla.
+ */
+export function accionProvisional(ticker: string, nombre: string, clase: string): Accion {
+  const grupo = grupoDeClase(clase)
+  return { ticker, nombre: nombre || ticker, grupo, sector: clase || nombreGrupo(grupo), ...PERFIL_GENERICO[grupo], estimada: true }
+}
+
+/** Busca el ticker en el universo; si no está, devuelve un perfil provisional. */
+export function accionDe(universo: readonly Accion[], ticker: string, nombre = '', clase = ''): Accion {
+  return universo.find((a) => a.ticker === ticker) ?? accionProvisional(ticker, nombre, clase)
+}

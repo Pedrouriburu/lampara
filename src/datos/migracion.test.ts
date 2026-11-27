@@ -1,12 +1,18 @@
 // Corre la migración de Supabase en un Postgres en memoria (PGlite) y prueba la seguridad por filas.
 // `auth.users`, `auth.uid()` y los roles de Supabase se simulan con lo mínimo necesario.
 import { PGlite } from '@electric-sql/pglite'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { UNIVERSO_BASE } from '../acciones/universo'
 import { RUBROS_BASE } from '../riesgo/supuestos'
 
-const SQL = readFileSync(new URL('../../supabase/migrations/20261112000000_inicial.sql', import.meta.url), 'utf8')
+// Todas las migraciones, en orden: así se prueba la cadena entera y no solo la primera.
+const CARPETA = new URL('../../supabase/migrations/', import.meta.url)
+const SQL = readdirSync(CARPETA)
+  .filter((n) => n.endsWith('.sql'))
+  .sort()
+  .map((n) => readFileSync(new URL(n, CARPETA), 'utf8'))
+  .join('\n;\n')
 const ANA = '11111111-1111-1111-1111-111111111111'
 const BETO = '22222222-2222-2222-2222-222222222222'
 
@@ -38,7 +44,7 @@ describe('migración de Supabase', () => {
     await db.exec('reset role')
     await db.exec(SQL)
     const r = await db.query<{ n: number }>('select count(*)::int as n from public.universo_acciones')
-    expect(r.rows[0].n).toBe(31)
+    expect(r.rows[0].n).toBe(UNIVERSO_BASE.length)
   })
 
   it('la carga inicial coincide con los supuestos del código', async () => {
@@ -107,7 +113,7 @@ describe('migración de Supabase', () => {
     expect((await db.query('select * from public.ediciones')).rows).toHaveLength(1)
     expect((await db.query('select * from public.cotizaciones')).rows).toHaveLength(1)
     expect((await db.query('select * from public.supuestos_rubros')).rows).toHaveLength(7)
-    expect((await db.query('select * from public.universo_acciones')).rows).toHaveLength(31)
+    expect((await db.query('select * from public.universo_acciones')).rows).toHaveLength(32)
   })
 
   it('solo la clave de servicio escribe ediciones, cotizaciones y tablas de referencia', async () => {

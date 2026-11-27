@@ -7,10 +7,10 @@ const accion = (t: string) => UNIVERSO_BASE.find((a) => a.ticker === t)!
 const escenario = (id: string) => ESCENARIOS_RESPALDO.find((e) => e.id === id)!
 
 describe('acciones por escenario', () => {
-  it('el universo tiene 15 acciones del Merval y 16 CEDEARs', () => {
+  it('el universo tiene 15 acciones del Merval y 17 CEDEARs', () => {
     expect(UNIVERSO_BASE.filter((a) => a.grupo === 'merval')).toHaveLength(15)
-    expect(UNIVERSO_BASE.filter((a) => a.grupo === 'cedears')).toHaveLength(16)
-    expect(new Set(UNIVERSO_BASE.map((a) => a.ticker)).size).toBe(31)
+    expect(UNIVERSO_BASE.filter((a) => a.grupo === 'cedears')).toHaveLength(17)
+    expect(new Set(UNIVERSO_BASE.map((a) => a.ticker)).size).toBe(UNIVERSO_BASE.length)
   })
 
   it('las probabilidades de los escenarios de respaldo suman 100', () => {

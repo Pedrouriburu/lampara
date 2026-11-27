@@ -95,3 +95,20 @@ create policy "movimientos: cada uno la suya" on public.movimientos
 
 -- Nadie entra sin sesión.
 revoke all on public.importaciones, public.tenencias, public.movimientos from anon;
+
+-- El universo deja de ser una lista cerrada ------------------------------------
+--
+-- Una acción que el usuario tiene pero que no está calibrada se muestra igual, con
+-- el perfil genérico de su grupo (la mediana del universo) y marcada como estimada,
+-- para que la app pueda decirlo en pantalla en vez de hacerla pasar por medida.
+alter table public.universo_acciones add column if not exists estimada boolean not null default false;
+
+-- ASML, que es un CEDEAR que no estaba. Fabricante de equipos de litografía para
+-- semiconductores: más cíclico que una tecnológica grande y menos que Nvidia, y
+-- con la misma sensibilidad alta a las tasas que el resto del sector.
+insert into public.universo_acciones (ticker, nombre, grupo, sector, rp, beta, tasas, oil, dolar, estimada)
+values ('ASML', 'ASML Holding', 'cedears', 'Equipos para semiconductores', 0, 1.35, -8, 0, 0, false)
+on conflict (ticker) do update set
+  nombre = excluded.nombre, grupo = excluded.grupo, sector = excluded.sector,
+  rp = excluded.rp, beta = excluded.beta, tasas = excluded.tasas, oil = excluded.oil,
+  dolar = excluded.dolar, estimada = excluded.estimada;
