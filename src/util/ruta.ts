@@ -1,8 +1,8 @@
-// Navegación por el hash de la dirección (#riesgo, #acciones, #historial, #supuestos).
+// Navegación por el hash de la dirección (#riesgo, #acciones, #cartera, #historial, #supuestos).
 import { useEffect, useState } from 'react'
 
-export type Ruta = 'riesgo' | 'acciones' | 'historial' | 'supuestos'
-export const RUTAS: Ruta[] = ['riesgo', 'acciones', 'historial', 'supuestos']
+export type Ruta = 'riesgo' | 'acciones' | 'cartera' | 'historial' | 'supuestos'
+export const RUTAS: Ruta[] = ['riesgo', 'acciones', 'cartera', 'historial', 'supuestos']
 
 function leer(): Ruta {
   const h = window.location.hash.replace(/^#/, '')

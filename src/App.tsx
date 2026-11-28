@@ -14,6 +14,7 @@ import { EdicionesAnteriores } from './pantallas/EdicionesAnteriores'
 import { Historial } from './pantallas/Historial'
 import { Ingreso } from './pantallas/Ingreso'
 import { Lectura } from './pantallas/Lectura'
+import { MiCartera } from './pantallas/MiCartera'
 import { PanelNoticias } from './pantallas/PanelNoticias'
 import { Supuestos } from './pantallas/Supuestos'
 import { MEP_REFERENCIA, MEP_REFERENCIA_NOTA, type OpcionesSimulacion, type ResultadoSimulacion } from './riesgo'
@@ -23,6 +24,7 @@ import { aplicarTema, leerTema, useRuta, type Ruta, type Tema } from './util/rut
 const PESTANAS: { ruta: Ruta; texto: string; corto: string }[] = [
   { ruta: 'riesgo', texto: 'Cartera y riesgo', corto: 'Cartera' },
   { ruta: 'acciones', texto: 'Acciones por escenario', corto: 'Acciones' },
+  { ruta: 'cartera', texto: 'Mi cartera', corto: 'Mi cartera' },
   { ruta: 'historial', texto: 'Historial', corto: 'Historial' },
   { ruta: 'supuestos', texto: 'Supuestos', corto: 'Supuestos' },
 ]
@@ -89,6 +91,7 @@ function Carcasa() {
 
       {ruta === 'riesgo' && <CarteraRiesgo noticias={(p) => <PanelNoticias {...p} />} acciones={(r, o) => <BotonGuardarCorrida resultado={r} opciones={o} />} />}
       {ruta === 'acciones' && <Acciones edicion={seleccionada} lectura={(ctx) => <Lectura ctx={ctx} />} />}
+      {ruta === 'cartera' && <MiCartera />}
       {ruta === 'historial' && <Historial ediciones={<EdicionesAnteriores />} />}
       {ruta === 'supuestos' && <Supuestos />}
 
